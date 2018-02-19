@@ -1,5 +1,9 @@
 // I got the recursion to work!
 // 'cept it crashes after a while.
+// It works with slimerjs too.
+// go to the slimer directory and do this:
+// $ casperjs --verbose -- engine=slimerjs ../Ancestry/<scriptname> --usename=blah --password=blar
+// Looks like you have to make sure Firefox is open to get past the proxy.
 
 var url = 'https://www.ancestry.com/dna/';      // The Ancestry website
 var i = 1;
@@ -7,8 +11,8 @@ function processPage() {
     // casper.waitForText('AncestryDNA Results for', function() {
     // Wait 1 more second
     casper.wait(1000);
-    casper.echo('Make a screenshot of the matches page');
-    casper.echo(casper.getTitle());
+    // casper.echo('Make a screenshot of the matches page');
+    // casper.echo(casper.getTitle());
     //this.capture('matches_page.png');
     // Pick all the shared match data from this page
     // Let's go with match test ID, name, admin, confidence, predicted relationship for now
@@ -19,7 +23,7 @@ function processPage() {
     getAncestryMatches();
 
     // click the next button
-    casper.echo('Trying to click the next button');
+    // casper.echo('Trying to click the next button');
     // copied big long selector from instpect element
     // this.click('body > div.ancSiteWrp > div.mainContent > div:nth-child(3) > article > div > div.page.pagePadded.pageWidth1.topSpacing > div > section.matchesFilter.clearfix > div.matchesPagination.matchesPaginationTop > div > a.ancBtn.silver.ancBtnIconOnly.ancBtnR.icon.iconArrowRight');
     // Trying it with an evaluate - IT WORKS!!!!!!!
@@ -50,6 +54,8 @@ var casper = require('casper').create({
   // Username & password from the command line
  var ANCESTRY_USERNAME = casper.cli.get('username');
  var ANCESTRY_PASSWORD = casper.cli.get('password');
+ var PAGES_TO_GET = casper.cli.get('pagelimit');			// get this many pages
+ var START_PAGE = casper.cli.get('startpage');				// start at this page (1 is the default)
  
  if (!casper.cli.has('username') && !casper.cli.has('password')) {
     casper.echo ('Usage $ phantom.exe casperjs.js casper_ancestry_login.js --username=USERNAME --password=PASSWORD').exit(-1);
@@ -115,7 +121,7 @@ var stopScript = function() {
 function getAncestryMatches() {
     // loop stuff
     myRef = casper;
-    myRef.echo('Starting getAncestryMatches function');
+    // myRef.echo('Starting getAncestryMatches function');
     var aMatchTestIDs = myRef.getElementsAttribute('.textxlrg', 'href');
     var aMatchNames = myRef.getElementsInfo('.textxlrg');
     var aAdmins = myRef.getElementsInfo('.matchesAdmin');

@@ -3,38 +3,29 @@
 // Provide your username and password as environment variables when running the script, i.e:
 // `GITHUB_USER=myuser GITHUB_PWD=mypassword node scrape.js`
 // All the stuff not commented out works.
+// This all works really well, too.
 
 const puppeteer = require('puppeteer');
 const util = require('util');
 const myPicName = 'puppet.png';			// path name for the screenshot png
-
 // this is awful, because it re-logs in every cycle of the loop!
 // Need to fix.
-let scrape = async (idx) => {
+// It works passing as a parameter
+let scrape = async (idx, page) => {
+  /*
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
-  
+  */
   // Need to come up with a strategy to get this URL on first login and save it
   // And to use cookies, so we don;t have to keep logging in everytime.
   // This is OK for now.
   // shift the idx to be the counting numbers, since page starts at 1
-  idx = idx + 1;
   let url = 'https://www.ancestry.com/dna/matches/5354AC1A-607E-4507-A3DC-BCA4D2142FD0?filterBy=ALL&sortBy=RELATIONSHIP&page=';
   url = url + idx;                // Add the page
-  await page.goto(url);
+  await page.goto(url);           // go to the next page
+  await page.waitFor(2000);       // wait for a little bit
 
-  await page.waitFor(1000);
-
-  // Now log in
-  // Need to come up with a strategy to save usernames and passwords in a file
-  // and then read protect it.
-  await page.type('#username', process.env.GITHUB_USER);
-  await page.type('#password', process.env.GITHUB_PWD);
-  await page.click('#loginButton');
-  // Wait a while...
-  await page.waitFor(5000);
- 
-  // Now on the matches page
+  // Now on the next matches page
   // Do the scraping
   const result = await page.evaluate(() => {
     let data = [];    // Empty array for the match data
@@ -78,22 +69,42 @@ let scrape = async (idx) => {
     return data;
     
   });
-  
-  // await page.waitFor(1000);
-  await browser.close();
   return result;
 };
 
 // to do the looping
 // This works.
 (async () => {
-  for(let i = 0; i < 10; i++){
-    await scrape(i).then((value) => {
+  // Initialize the puppeteer browser and pag
+  const browser = await puppeteer.launch({headless: true});
+  const page = await browser.newPage();
+
+  // Do the login first
+  await page.goto('https://www.ancestry.com/dna/matches/5354AC1A-607E-4507-A3DC-BCA4D2142FD0?filterBy=ALL&sortBy=RELATIONSHIP&page=1');
+  await page.waitFor(1000);
+
+  // Now log in
+  // Need to come up with a strategy to save usernames and passwords in a file
+  // and then read protect it.
+  await page.type('#username', process.env.GITHUB_USER);
+  await page.type('#password', process.env.GITHUB_PWD);
+  await page.click('#loginButton');
+  await page.waitFor(5000);         // Wait a long time to get redirected
+
+  // Now go and get all the data
+  // This will give a start and end page to scrape through
+  const startPage = 10;
+  const endPage = 20;
+  // this will get me from startPage to endPage inclusive.
+  // Pages start counting at page 1 (rather than 0).
+  for(let i = startPage; i <= endPage; i++){
+    // Do the scraping - this advances the page too
+    await scrape(i, page).then((value) => {
       // this is for marking the page numbers in the output
-      let page = i+1;
-      console.log( 'Page ' + page );
+      console.log( 'Page ' + i );
       // Print the array output
       console.log(util.inspect(value, { maxArrayLength: null}));      // Success
     });
   }
+  await browser.close();          // Buh bye
 })();

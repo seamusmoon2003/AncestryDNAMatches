@@ -5,6 +5,28 @@
 // All the stuff not commented out works.
 // This all works really well, too.
 
+// Command Line Args Declarations
+const commandLineArgs = require('command-line-args');
+const optionDefinitions = [
+  { name: 'username', alias: 'u', type: String },
+  { name: 'password', alias: 'p', type: String },
+  { name: 'startPage', alias: 's', type: Number, },
+  { name: 'endPage', alias: 'e', type: Number}
+];
+const options = commandLineArgs(optionDefinitions);
+// If the command line looks like this:
+// example --username=Fred --password=derF --startPage 1 --endPage 425
+// then options looks like this:
+/*
+{
+  username: 'Fred',
+  password: 'derF',
+  startPage: 1
+  endPage: 425
+}
+*/
+
+
 const puppeteer = require('puppeteer');
 const util = require('util');
 const myPicName = 'puppet.png';			// path name for the screenshot png

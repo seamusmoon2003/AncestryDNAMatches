@@ -11,9 +11,11 @@ const optionDefinitions = [
   { name: 'username', alias: 'u', type: String },
   { name: 'password', alias: 'p', type: String },
   { name: 'startPage', alias: 's', type: Number, },
-  { name: 'endPage', alias: 'e', type: Number}
+  { name: 'numPages', alias: 'n', type: Number}
 ];
 const options = commandLineArgs(optionDefinitions);
+const usageStr = 'usage: node scrape.js --username <myname> --password <mypwd> [--startPage <pagenum> --numPages <pagenum>]';
+
 // If the command line looks like this:
 // example --username=Fred --password=derF --startPage 1 --endPage 425
 // then options looks like this:
@@ -25,7 +27,25 @@ const options = commandLineArgs(optionDefinitions);
   endPage: 425
 }
 */
+if (typeof options.startPage == 'undefined') {
+  // Default is the first page
+  options.startPage = 1;
+}
 
+if (typeof options.numPages == 'undefined') {
+  // Default is 10 pages
+  options.numPages = 10;
+}
+
+if (typeof options.username == 'undefined') {
+  console.log( usageStr );
+  process.exit(-1);
+}
+
+if (typeof options.password == 'undefined') {
+  console.log( usageStr );
+  process.exit(-1);
+}
 
 const puppeteer = require('puppeteer');
 const util = require('util');
@@ -108,15 +128,15 @@ let scrape = async (idx, page) => {
   // Now log in
   // Need to come up with a strategy to save usernames and passwords in a file
   // and then read protect it.
-  await page.type('#username', process.env.GITHUB_USER);
-  await page.type('#password', process.env.GITHUB_PWD);
+  await page.type('#username', options.username);
+  await page.type('#password', options.password);
   await page.click('#loginButton');
   await page.waitFor(5000);         // Wait a long time to get redirected
 
   // Now go and get all the data
   // This will give a start and end page to scrape through
-  const startPage = 10;
-  const endPage = 20;
+  const startPage = options.startPage;
+  const endPage = options.startPage + options.numPages;
   // this will get me from startPage to endPage inclusive.
   // Pages start counting at page 1 (rather than 0).
   for(let i = startPage; i <= endPage; i++){

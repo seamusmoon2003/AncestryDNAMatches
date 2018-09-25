@@ -55,6 +55,7 @@ if (typeof options.password == 'undefined') {
   process.exit(-1);
 }
 
+const Database = require('better-sqlite3');
 const puppeteer = require('puppeteer');
 const util = require('util');
 const myPicName = 'puppet.png';			// path name for the screenshot png
@@ -125,8 +126,7 @@ let scrape = async (idx, page, db) => {
 // to do the looping
 // This works.
 (async () => {
-  const Database = require('better-sqlite3');
-  const db = new Database('matches.db', (err) => {
+  const db = await new Database('matches.db', (err) => {
   if (err) {
     console.error(err.message);
   }

@@ -112,6 +112,11 @@ let scrape = async (idx, page) => {
       matchID = matchID[0].split("/");
       matchID = matchID[3];
 
+      // Put the data into the database
+      // What to do if the row already exists?
+      stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
+      stmt.run( matchID, name, range, estimatedRelationship, confidence);
+
       // Create the match ine item string for output
       let matchDataLine = name + ', ' + matchID + ', ' + range + ', ' + estimatedRelationship + ', ' + confidence;
       // Push the line item to the output array
@@ -158,4 +163,5 @@ let scrape = async (idx, page) => {
     });
   }
   await browser.close();          // Buh bye
+  db.close();                     // Might have to do the awaits for the db interaction.
 })();

@@ -5,13 +5,7 @@
 /* The sqlite stuff
 link: https://github.com/JoshuaWise/better-sqlite3
 */
-var Database = require('better-sqlite3');
-var db = new Database('matches.db', (err) => {
-  if (err) {
-    console.error(err.message);
-  }
-  console.log('Connected to the matches database.');
-});
+
 
 /*
 var row = db.prepare('SELECT * FROM users WHERE id=?).get(userId);
@@ -66,7 +60,7 @@ const util = require('util');
 const myPicName = 'puppet.png';			// path name for the screenshot png
 
 // It works passing as a parameter
-let scrape = async (idx, page) => {
+let scrape = async (idx, page, db) => {
   // To Do: Need to come up with a strategy to get this URL on first login and save it
   // And to use cookies, so we don;t have to keep logging in everytime.
   // This is OK for now.
@@ -114,7 +108,7 @@ let scrape = async (idx, page) => {
 
       // Put the data into the database
       // What to do if the row already exists?
-      stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
+      let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
       stmt.run( matchID, name, range, estimatedRelationship, confidence);
 
       // Create the match ine item string for output
@@ -131,7 +125,14 @@ let scrape = async (idx, page) => {
 // to do the looping
 // This works.
 (async () => {
-  // Initialize the puppeteer browser and pag
+  const Database = require('better-sqlite3');
+  const db = new Database('matches.db', (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log('Connected to the matches database.');
+  });
+  // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
 
@@ -155,7 +156,7 @@ let scrape = async (idx, page) => {
   // Pages start counting at page 1 (rather than 0).
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
-    await scrape(i, page).then((value) => {
+    await scrape(i, page, db).then((value) => {
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output
@@ -163,5 +164,5 @@ let scrape = async (idx, page) => {
     });
   }
   await browser.close();          // Buh bye
-  db.close();                     // Might have to do the awaits for the db interaction.
+  await db.close();                     // Might have to do the awaits for the db interaction.
 })();

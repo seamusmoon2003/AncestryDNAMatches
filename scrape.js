@@ -1,9 +1,23 @@
 // Use Puppeteer to scrape Ancestry
-// for passing the username & password:
-// Provide your username and password as environment variables when running the script, i.e:
-// `GITHUB_USER=myuser GITHUB_PWD=mypassword node scrape.js`
 // All the stuff not commented out works.
 // This all works really well, too.
+
+/* The sqlite stuff
+link: https://github.com/JoshuaWise/better-sqlite3
+*/
+var Database = require('better-sqlite3');
+var db = new Database('matches.db', (err) => {
+  if (err) {
+    console.error(err.message);
+  }
+  console.log('Connected to the matches database.');
+});
+
+/*
+var row = db.prepare('SELECT * FROM users WHERE id=?).get(userId);
+console.log(row.firstName, row.lastName, row.email);
+*/
+
 
 // Command Line Args Declarations
 const commandLineArgs = require('command-line-args');
@@ -50,15 +64,10 @@ if (typeof options.password == 'undefined') {
 const puppeteer = require('puppeteer');
 const util = require('util');
 const myPicName = 'puppet.png';			// path name for the screenshot png
-// this is awful, because it re-logs in every cycle of the loop!
-// Need to fix.
+
 // It works passing as a parameter
 let scrape = async (idx, page) => {
-  /*
-  const browser = await puppeteer.launch({headless: true});
-  const page = await browser.newPage();
-  */
-  // Need to come up with a strategy to get this URL on first login and save it
+  // To Do: Need to come up with a strategy to get this URL on first login and save it
   // And to use cookies, so we don;t have to keep logging in everytime.
   // This is OK for now.
   // shift the idx to be the counting numbers, since page starts at 1

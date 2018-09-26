@@ -137,7 +137,7 @@ let scrape = async (idx, page, db) => {
       stmt.run( matchID, name, range, estimatedRelationship, confidence);
       
 */
-      await insertRow(db, matchID, name, range, estimatedRelationship, confidence);
+      insertRow(db, matchID, name, range, estimatedRelationship, confidence);
 
       // Create the match ine item string for output
       let matchDataLine = name + ', ' + matchID + ', ' + range + ', ' + estimatedRelationship + ', ' + confidence;

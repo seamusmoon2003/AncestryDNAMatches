@@ -84,7 +84,7 @@ const util = require('util');
 const myPicName = 'puppet.png';			// path name for the screenshot png
 
 // It works passing as a parameter
-let scrape = async (idx, page) => {
+let scrape = async (idx, page, db) => {
   // To Do: Need to come up with a strategy to get this URL on first login and save it
   // And to use cookies, so we don;t have to keep logging in everytime.
   // This is OK for now.
@@ -137,8 +137,8 @@ let scrape = async (idx, page) => {
       stmt.run( matchID, name, range, estimatedRelationship, confidence);
       
 */
-      insertRow(matchID, name, range, estimatedRelationship, confidence);
-      
+      await insertRow(db, matchID, name, range, estimatedRelationship, confidence);
+
       // Create the match ine item string for output
       let matchDataLine = name + ', ' + matchID + ', ' + range + ', ' + estimatedRelationship + ', ' + confidence;
       // Push the line item to the output array
@@ -180,7 +180,7 @@ let scrape = async (idx, page) => {
   // Pages start counting at page 1 (rather than 0).
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
-    await scrape(i, page).then((value) => {
+    await scrape(i, page, db).then((value) => {
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output

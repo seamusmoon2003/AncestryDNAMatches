@@ -5,7 +5,25 @@
 /* The sqlite stuff
 link: https://github.com/JoshuaWise/better-sqlite3
 */
+const Database = require('better-sqlite3');
+const DB_PATH = 'matches.db';
+const openConnection= () => new Promise((resolve, reject) => {
+  let db = new Database(DB_PATH, (err) => {
+    if (err) return reject(err.message);
+  });
 
+  resolve (db);
+});
+
+const closeConnection = db => new Promise(( resolve, reject) => {
+  db.close(err => {
+    if (err) return reject(err.message);
+  });
+
+  resolve (db);
+});
+
+const insertRow
 
 /*
 var row = db.prepare('SELECT * FROM users WHERE id=?).get(userId);
@@ -55,13 +73,13 @@ if (typeof options.password == 'undefined') {
   process.exit(-1);
 }
 
-const Database = require('better-sqlite3');
+
 const puppeteer = require('puppeteer');
 const util = require('util');
 const myPicName = 'puppet.png';			// path name for the screenshot png
 
 // It works passing as a parameter
-let scrape = async (idx, page, db) => {
+let scrape = async (idx, page) => {
   // To Do: Need to come up with a strategy to get this URL on first login and save it
   // And to use cookies, so we don;t have to keep logging in everytime.
   // This is OK for now.
@@ -109,9 +127,10 @@ let scrape = async (idx, page, db) => {
 
       // Put the data into the database
       // What to do if the row already exists?
+      /*
       let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
       stmt.run( matchID, name, range, estimatedRelationship, confidence);
-
+*/
       // Create the match ine item string for output
       let matchDataLine = name + ', ' + matchID + ', ' + range + ', ' + estimatedRelationship + ', ' + confidence;
       // Push the line item to the output array
@@ -126,12 +145,9 @@ let scrape = async (idx, page, db) => {
 // to do the looping
 // This works.
 (async () => {
-  const db = await new Database('matches.db', (err) => {
-  if (err) {
-    console.error(err.message);
-  }
-  console.log('Connected to the matches database.');
-  });
+  // Open the database
+  await db.openConnection();
+
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
@@ -156,7 +172,7 @@ let scrape = async (idx, page, db) => {
   // Pages start counting at page 1 (rather than 0).
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
-    await scrape(i, page, db).then((value) => {
+    await scrape(i, page).then((value) => {
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output
@@ -164,5 +180,5 @@ let scrape = async (idx, page, db) => {
     });
   }
   await browser.close();          // Buh bye
-  await db.close();                     // Might have to do the awaits for the db interaction.
+  await db.closeConnection();     // Close the database
 })();

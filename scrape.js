@@ -5,6 +5,7 @@
 /* The sqlite stuff
 link: https://github.com/JoshuaWise/better-sqlite3
 */
+
 const Database = require('better-sqlite3');
 const DB_PATH = 'matches.db';
 const openConnection= () => new Promise((resolve, reject) => {
@@ -146,7 +147,7 @@ let scrape = async (idx, page) => {
 // This works.
 (async () => {
   // Open the database
-  await db.openConnection();
+  let db = await openConnection();
 
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
@@ -180,5 +181,5 @@ let scrape = async (idx, page) => {
     });
   }
   await browser.close();          // Buh bye
-  await db.closeConnection();     // Close the database
+  await closeConnection(db);     // Close the database
 })();

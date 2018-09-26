@@ -8,14 +8,14 @@ link: https://github.com/JoshuaWise/better-sqlite3
 
 const Database = require('better-sqlite3');
 const DB_PATH = 'matches.db';
-let db = new Database(DB_PATH);
-
+/*
 const insertRow = (db, matchID, name, range, estimatedRelationship, confidence) => new Promise(( resolve, reject) => {
   let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
   stmt.run( matchID, name, range, estimatedRelationship, confidence);
 
   resolve (db);
 });
+*/
 /*
 var row = db.prepare('SELECT * FROM users WHERE id=?).get(userId);
 console.log(row.firstName, row.lastName, row.email);
@@ -137,7 +137,9 @@ let scrape = async (idx, page, db) => {
 
 // to do the looping
 // This works.
-(async (db) => {
+(async () => {
+  let db = new Database(DB_PATH);
+  
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();

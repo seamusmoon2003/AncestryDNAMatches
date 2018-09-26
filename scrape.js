@@ -29,7 +29,7 @@ const insertRow = (db, matchID, name, range, estimatedRelationship, confidence) 
   stmt.run( matchID, name, range, estimatedRelationship, confidence);
 
   resolve (db);
-}
+});
 /*
 var row = db.prepare('SELECT * FROM users WHERE id=?).get(userId);
 console.log(row.firstName, row.lastName, row.email);

@@ -24,8 +24,12 @@ const closeConnection = db => new Promise(( resolve, reject) => {
   resolve (db);
 });
 
-const insertRow
+const insertRow = (db, matchID, name, range, estimatedRelationship, confidence) => new Promise(( resolve, reject) => {
+  let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
+  stmt.run( matchID, name, range, estimatedRelationship, confidence);
 
+  resolve (db);
+}
 /*
 var row = db.prepare('SELECT * FROM users WHERE id=?).get(userId);
 console.log(row.firstName, row.lastName, row.email);
@@ -131,7 +135,10 @@ let scrape = async (idx, page) => {
       /*
       let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
       stmt.run( matchID, name, range, estimatedRelationship, confidence);
+      
 */
+      insertRow(matchID, name, range, estimatedRelationship, confidence);
+      
       // Create the match ine item string for output
       let matchDataLine = name + ', ' + matchID + ', ' + range + ', ' + estimatedRelationship + ', ' + confidence;
       // Push the line item to the output array

@@ -8,21 +8,7 @@ link: https://github.com/JoshuaWise/better-sqlite3
 
 const Database = require('better-sqlite3');
 const DB_PATH = 'matches.db';
-const openConnection= () => new Promise((resolve, reject) => {
-  let db = new Database(DB_PATH, (err) => {
-    if (err) return reject(err.message);
-  });
-
-  resolve (db);
-});
-
-const closeConnection = db => new Promise(( resolve, reject) => {
-  db.close(err => {
-    if (err) return reject(err.message);
-  });
-
-  resolve (db);
-});
+let db = new Database(DB_PATH);
 
 const insertRow = (db, matchID, name, range, estimatedRelationship, confidence) => new Promise(( resolve, reject) => {
   let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
@@ -132,9 +118,10 @@ let scrape = async (idx, page, db) => {
 
       // Put the data into the database
       // What to do if the row already exists?
+      /*
       let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
       stmt.run( matchID, name, range, estimatedRelationship, confidence);
-      
+      */
       //insertRow(db, matchID, name, range, estimatedRelationship, confidence);
 
       // Create the match ine item string for output
@@ -150,10 +137,7 @@ let scrape = async (idx, page, db) => {
 
 // to do the looping
 // This works.
-(async () => {
-  // Open the database
-  let db = await openConnection();
-
+(async (db) => {
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
@@ -186,5 +170,5 @@ let scrape = async (idx, page, db) => {
     });
   }
   await browser.close();          // Buh bye
-  await closeConnection(db);     // Close the database
+  db.close();
 })();

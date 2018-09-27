@@ -2,25 +2,8 @@
 // All the stuff not commented out works.
 // This all works really well, too.
 
-/* The sqlite stuff
-link: https://github.com/JoshuaWise/better-sqlite3
-*/
 
-const Database = require('better-sqlite3');
-const DB_PATH = 'matches.db';
-/*
-const insertRow = (db, matchID, name, range, estimatedRelationship, confidence) => new Promise(( resolve, reject) => {
-  let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
-  stmt.run( matchID, name, range, estimatedRelationship, confidence);
-
-  resolve (db);
-});
-*/
-/*
-var row = db.prepare('SELECT * FROM users WHERE id=?).get(userId);
-console.log(row.firstName, row.lastName, row.email);
-*/
-
+const DBHelper = require('./DB_Helper.js');
 
 // Command Line Args Declarations
 const commandLineArgs = require('command-line-args');
@@ -70,7 +53,7 @@ const util = require('util');
 const myPicName = 'puppet.png';			// path name for the screenshot png
 
 // It works passing as a parameter
-let scrape = async (idx, page, db) => {
+let scrape = async (idx, page) => {
   // To Do: Need to come up with a strategy to get this URL on first login and save it
   // And to use cookies, so we don;t have to keep logging in everytime.
   // This is OK for now.
@@ -116,13 +99,15 @@ let scrape = async (idx, page, db) => {
       matchID = matchID[0].split("/");
       matchID = matchID[3];
 
-      // Put the data into the database
-      // What to do if the row already exists?
-      /*
-      let stmt = db.prepare( 'INSERT OR REPLACE INTO matches VALUES (?, ?, ?, ?, ?)');
-      stmt.run( matchID, name, range, estimatedRelationship, confidence);
-      */
-      //insertRow(db, matchID, name, range, estimatedRelationship, confidence);
+      let aRow = {
+        "id": matchID,
+        "name": name,
+        "range": range,
+        "estimate": estimatedRelationship,
+        "confidence": confidence
+      }
+
+      await DBHelper.insertData(aRow);
 
       // Create the match ine item string for output
       let matchDataLine = name + ', ' + matchID + ', ' + range + ', ' + estimatedRelationship + ', ' + confidence;
@@ -138,8 +123,7 @@ let scrape = async (idx, page, db) => {
 // to do the looping
 // This works.
 (async () => {
-  let db = new Database(DB_PATH);
-  
+ 
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
@@ -164,7 +148,7 @@ let scrape = async (idx, page, db) => {
   // Pages start counting at page 1 (rather than 0).
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
-    await scrape(i, page, db).then((value) => {
+    await scrape(i, page).then((value) => {
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output
@@ -172,5 +156,4 @@ let scrape = async (idx, page, db) => {
     });
   }
   await browser.close();          // Buh bye
-  db.close();
 })();

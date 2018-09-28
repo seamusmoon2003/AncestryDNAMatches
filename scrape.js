@@ -3,7 +3,7 @@
 // This all works really well, too.
 
 
-const DBHelper = require('./DB_Helper.js');
+
 
 // Command Line Args Declarations
 const commandLineArgs = require('command-line-args');
@@ -123,7 +123,7 @@ let scrape = async (idx, page) => {
 // to do the looping
 // This works.
 (async () => {
- 
+  const DBHelper = require('./DB_Helper.js');
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
@@ -148,7 +148,7 @@ let scrape = async (idx, page) => {
   // Pages start counting at page 1 (rather than 0).
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
-    await scrape(i, page).then((value) => {
+    await scrape(i, page, DBHelper).then((value) => {
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output

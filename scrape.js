@@ -83,6 +83,7 @@ let scrape = async (idx, page) => {
     // more robust. Maybe with child nodes or something like that.
     // To Do: Figure out how to get the admin and match it with the correct element. Again,
     // maybe with child nodes or something.
+    let db = new sqlite3(DB_PATH);
     for (var i = 0; i < elements.length; i++) { 
       let confidence = confidences[i].getAttribute('style');
       // get rid of the "width: " in the confidence level
@@ -97,12 +98,16 @@ let scrape = async (idx, page) => {
       matchID = matchID.split("?");
       matchID = matchID[0].split("/");
       matchID = matchID[3];
-
+      
+      // Database
+        let stmt = db.prepare('INSERT INTO matches VALUES (?,?,?,?,?)');
+        stmt.run( matchID, name, range, estimatedRelationship, confidence);
       // Create the match ine item string for output
       let matchDataLine = matchID + ',' + name + ',' + range + ',' + estimatedRelationship + ',' + confidence;
       // Push the line item to the output array
       data.push( matchDataLine );
     } 
+    db.close();
     return data;
     
   });
@@ -137,15 +142,6 @@ let scrape = async (idx, page) => {
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
     await scrape(i, page).then((value) => {
-      // put the items in the database
-      let db = new sqlite3(DB_PATH);
-
-      for (var aline in value) {
-        let fields = aline.split(",");
-        let stmt = db.prepare('INSERT INTO matches VALUES (?,?,?,?,?)');
-        stmt.run( fields[0], fields[1], fields[2], fields[3], fields[4]);
-      }
-      db.close();
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output

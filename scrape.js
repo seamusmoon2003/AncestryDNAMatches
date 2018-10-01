@@ -99,7 +99,7 @@ let scrape = async (idx, page) => {
       matchID = matchID[3];
 
       // Create the match ine item string for output
-      let matchDataLine = name + ', ' + matchID + ', ' + range + ', ' + estimatedRelationship + ', ' + confidence;
+      let matchDataLine = matchID + ',' + name + ',' + range + ',' + estimatedRelationship + ',' + confidence;
       // Push the line item to the output array
       data.push( matchDataLine );
     } 
@@ -138,10 +138,10 @@ let scrape = async (idx, page) => {
     // Do the scraping - this advances the page too
     await scrape(i, page).then((value) => {
       // put the items in the database
-      let db = new Database(DB_PATH);
+      let db = new sqlite3(DB_PATH);
 
       for (var aline in value) {
-        let fields = aline.split(/,/);
+        let fields = aline.split(",");
         let stmt = db.prepare('INSERT INTO matches VALUES (?,?,?,?,?)');
         stmt.run( fields[0], fields[1], fields[2], fields[3], fields[4]);
       }

@@ -1,9 +1,8 @@
 // Use Puppeteer to scrape Ancestry
 // All the stuff not commented out works.
 // This all works really well, too.
-
-
-
+const sqlite3 = require('better-sqlite3');
+const DB_PATH = 'matches.db';
 
 // Command Line Args Declarations
 const commandLineArgs = require('command-line-args');
@@ -107,8 +106,6 @@ let scrape = async (idx, page) => {
         "confidence": confidence
       }
 
-      await DBHelper.insertData(aRow);
-
       // Create the match ine item string for output
       let matchDataLine = name + ', ' + matchID + ', ' + range + ', ' + estimatedRelationship + ', ' + confidence;
       // Push the line item to the output array
@@ -123,7 +120,6 @@ let scrape = async (idx, page) => {
 // to do the looping
 // This works.
 (async () => {
-  const DBHelper = require('./DB_Helper.js');
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
@@ -148,7 +144,24 @@ let scrape = async (idx, page) => {
   // Pages start counting at page 1 (rather than 0).
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
-    await scrape(i, page, DBHelper).then((value) => {
+    await scrape(i, page).then((value) => {
+      // put the items in the database
+      let db = new sqlite3.Database(DB_PATH);
+
+      for (var aLine in value) {
+        let fields = split( aline, /,/);
+        let aRow = {
+          "id": fields[0],
+          "name": fields[1],
+          "range": fields[2],
+          "estimate": fields[3],
+          "confidence": fields[4]
+        };
+      }
+
+        const cols = Object.keys(aRow); // get all keys for mapping to columns.
+
+        db.run(`INSERT INTO matches (${cols.join(`,`)}) VALUES (${cols.map(() => `?`).join(`,`)})`, Object.values(aRow));
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output

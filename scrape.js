@@ -1,7 +1,7 @@
 // Use Puppeteer to scrape Ancestry
 // All the stuff not commented out works.
 // This all works really well, too.
-const sqlite3 = require('better-sqlite3');
+const Database = require('better-sqlite3');
 const DB_PATH = 'matches.db';
 
 // Command Line Args Declarations
@@ -83,7 +83,7 @@ let scrape = async (idx, page) => {
     // more robust. Maybe with child nodes or something like that.
     // To Do: Figure out how to get the admin and match it with the correct element. Again,
     // maybe with child nodes or something.
-    let db = new sqlite3(DB_PATH);
+
     for (var i = 0; i < elements.length; i++) { 
       let confidence = confidences[i].getAttribute('style');
       // get rid of the "width: " in the confidence level
@@ -99,9 +99,6 @@ let scrape = async (idx, page) => {
       matchID = matchID[0].split("/");
       matchID = matchID[3];
       
-      // Database
-        let stmt = db.prepare('INSERT INTO matches VALUES (?,?,?,?,?)');
-        stmt.run( matchID, name, range, estimatedRelationship, confidence);
       // Create the match ine item string for output
       let matchDataLine = matchID + ',' + name + ',' + range + ',' + estimatedRelationship + ',' + confidence;
       // Push the line item to the output array
@@ -117,6 +114,8 @@ let scrape = async (idx, page) => {
 // to do the looping
 // This works.
 (async () => {
+  // Database
+  const db = new Database(DB_PATH);
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
   const page = await browser.newPage();
@@ -142,6 +141,16 @@ let scrape = async (idx, page) => {
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
     await scrape(i, page).then((value) => {
+      // Iterate over the array and put insert the data into the database
+      value.forEach(aline, function() {
+        // each line is a comma delimted list like this:
+        //  matchID,name,range,estimatedRelationship,confidence
+        fields = aline.split(",");
+        // Database
+        let stmt = db.prepare('INSERT INTO matches VALUES (?,?,?,?,?)');
+        stmt.run( fields[0], fields[1], fields[2], fields[3], fields[4]);
+      });
+      
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output
@@ -149,4 +158,5 @@ let scrape = async (idx, page) => {
     });
   }
   await browser.close();          // Buh bye
+  db.close();
 })();

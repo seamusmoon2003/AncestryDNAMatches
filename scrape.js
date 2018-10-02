@@ -104,7 +104,6 @@ let scrape = async (idx, page) => {
       // Push the line item to the output array
       data.push( matchDataLine );
     } 
-    db.close();
     return data;
     
   });

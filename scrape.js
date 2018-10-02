@@ -116,7 +116,7 @@ let scrape = async (idx, page) => {
 // to do the looping
 // This works.
 (async () => {
-  // Database
+  // Initialize the DB
   const db = new Database(DB_PATH);
   // Initialize the puppeteer browser and page
   const browser = await puppeteer.launch({headless: true});
@@ -143,23 +143,22 @@ let scrape = async (idx, page) => {
   for(let i = startPage; i <= endPage; i++){
     // Do the scraping - this advances the page too
     await scrape(i, page).then((value) => {
-      //const db = new Database(DB_PATH);
       // Iterate over the array and put insert the data into the database
       value.forEach(function(aline) {
         // each line is a comma delimted list like this:
         //  matchID,name,range,estimatedRelationship,confidence
         fields = aline.split(",");
         // Database
-        let stmt = db.prepare('INSERT INTO matches VALUES (?,?,?,?,?)');
+        // Insert the data - or replace the line if it is a dup.
+        let stmt = db.prepare('INSERT OR REPLACE INTO matches VALUES (?,?,?,?,?)');
         stmt.run( fields[0], fields[1], fields[2], fields[3], fields[4]);
       });
-      // db.close();
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );
       // Print the array output
       console.log(util.inspect(value, { maxArrayLength: null}));      // Success
     });
   }
-  db.close();
+  db.close();                     // Close the db
   await browser.close();          // Buh bye
 })();

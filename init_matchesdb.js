@@ -14,7 +14,8 @@ var db = new Database('matches.db', (err) => {
       name TEXT,
       range TEXT,
       estimate TEXT,
-      confidence TEXT
+      confidence TEXT,
+      link TEXT
   );
   `;
 db.exec(sqlInit);

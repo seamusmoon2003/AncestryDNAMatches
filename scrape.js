@@ -96,14 +96,18 @@ let scrape = async (idx, page) => {
       let range = ranges[2*i].innerText; 
       let estimatedRelationship = ranges[2*i + 1].innerText;
       let name = elements[i].innerText;
-      // Extract the matchID from the href
-      let matchID = elements[i].getAttribute('href');
+      // Get the link to the individual page
+      let link = elements[i].getAttribute('href');
+      // Extract the matchID from the link
+      let matchID = link;
       matchID = matchID.split("?");
       matchID = matchID[0].split("/");
       matchID = matchID[3];
+
+
       
       // Create the match ine item string for output
-      let matchDataLine = matchID + ',' + name + ',' + range + ',' + estimatedRelationship + ',' + confidence;
+      let matchDataLine = matchID + ',' + name + ',' + range + ',' + estimatedRelationship + ',' + confidence + ',' + link;
       // Push the line item to the output array
       data.push( matchDataLine );
     } 
@@ -146,12 +150,12 @@ let scrape = async (idx, page) => {
       // Iterate over the array and put insert the data into the database
       value.forEach(function(aline) {
         // each line is a comma delimted list like this:
-        //  matchID,name,range,estimatedRelationship,confidence
+        //  matchID,name,range,estimatedRelationship,confidence, link
         fields = aline.split(",");
         // Database
         // Insert the data - or replace the line if it is a dup.
-        let stmt = db.prepare('INSERT OR REPLACE INTO matches VALUES (?,?,?,?,?)');
-        stmt.run( fields[0], fields[1], fields[2], fields[3], fields[4]);
+        let stmt = db.prepare('INSERT OR REPLACE INTO matches VALUES (?,?,?,?,?,?)');
+        stmt.run( fields[0], fields[1], fields[2], fields[3], fields[4], fields[5]);
       });
       // this is for marking the page numbers in the output
       console.log( 'Page ' + i );

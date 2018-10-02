@@ -142,7 +142,7 @@ let scrape = async (idx, page) => {
     await scrape(i, page).then((value) => {
       const db = new Database(DB_PATH);
       // Iterate over the array and put insert the data into the database
-      value.forEach(aline, function() {
+      value.forEach(function(aline) {
         // each line is a comma delimted list like this:
         //  matchID,name,range,estimatedRelationship,confidence
         fields = aline.split(",");
